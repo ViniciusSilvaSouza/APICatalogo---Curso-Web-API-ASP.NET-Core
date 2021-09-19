@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace APICatalogo.Models
 {
     [Table("Produtos")]
-    public class Produto : IValidatableObject
+    public class Produto //: IValidatableObject
     {
         [Key]
         public int ProdutoId { get; set; }
@@ -32,19 +32,19 @@ namespace APICatalogo.Models
         public Categoria Categoria { get; set; }
         public int CategoriaId { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (!string.IsNullOrEmpty(this.Nome))
-            {
-                var primeiraLetra = this.Nome[0].ToString();
-                if (primeiraLetra != primeiraLetra.ToUpper())
-                    yield return new ValidationResult("A primeira letra do nome do produto deve ser maiúscula", new[] { nameof(this.Nome) });
-            }
+        //public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        //{
+        //    if (!string.IsNullOrEmpty(this.Nome))
+        //    {
+        //        var primeiraLetra = this.Nome[0].ToString();
+        //        if (primeiraLetra != primeiraLetra.ToUpper())
+        //            yield return new ValidationResult("A primeira letra do nome do produto deve ser maiúscula", new[] { nameof(this.Nome) });
+        //    }
 
-            if (this.Estoque <= 0)
-            {
-                yield return new ValidationResult("O estoque deve ser maior que zero", new[] { nameof(this.Estoque) });
-            }
-        }
+        //    if (this.Estoque <= 0)
+        //    {
+        //        yield return new ValidationResult("O estoque deve ser maior que zero", new[] { nameof(this.Estoque) });
+        //    }
+        //}
     }
 }
