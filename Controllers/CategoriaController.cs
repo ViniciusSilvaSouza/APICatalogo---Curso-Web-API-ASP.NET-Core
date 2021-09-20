@@ -1,6 +1,7 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.DTOs;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 using APICatalogo.Repository;
 using APICatalogo.Services;
 using AutoMapper;
