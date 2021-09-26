@@ -13,9 +13,9 @@ namespace APICatalogo.Repository
     {
         public CategoriaRepository(AppDbContext context) : base(context) { }
 
-        public PagedList<Categoria> GetCategorias(CategoriasParameters categoriasParameters)
+        public async Task<PagedList<Categoria>> GetCategorias(CategoriasParameters categoriasParameters)
         {
-            return PagedList<Categoria>.ToPagedList(Get().Include(x => x.Produtos).OrderBy(on => on.Nome),
+            return await  PagedList<Categoria>.ToPagedList(Get().Include(x => x.Produtos).OrderBy(on => on.Nome),
                 categoriasParameters.PageNumber,
                 categoriasParameters.PageSize);
         }
