@@ -39,7 +39,8 @@ namespace APICatalogo.Controllers
                 produtos.HasNext,
                 produtos.HasPrevious
 
-            };
+            }; 
+
             Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
 
             var produtosDto = _mapper.Map<List<ProdutoDTO>>(produtos);

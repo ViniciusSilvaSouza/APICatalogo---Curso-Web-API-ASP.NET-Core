@@ -9,6 +9,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +36,7 @@ namespace APICatalogo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            //! Adiciona AutoMapper 
             var mappingConfig = new MapperConfiguration(mc => { mc.AddProfile(new MappingProfile()); }
             );
             IMapper mapper = mappingConfig.CreateMapper();
@@ -43,12 +44,20 @@ namespace APICatalogo
             services.AddSingleton(mapper);
             services.AddScoped<APILoggingFilter>();
 
+            //! Connection String da aplicação
             string sqlConnection = Configuration.GetConnectionString("DefaultConnection");
 
+            // ! Adiciona DBContext da aplicação
             services.AddDbContext<AppDbContext>(options =>
            options.UseMySql(sqlConnection, ServerVersion.AutoDetect(sqlConnection)));
 
+
+            //! Serviço que adiciona Identity na aplicação
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
             services.AddTransient<IMeuServico, MeuServico>();
+
+            //! Adição do UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddControllers().AddNewtonsoftJson(opt =>
             {
@@ -78,11 +87,16 @@ namespace APICatalogo
             app.ConfigureExceptionHandler();
 
             app.UseHttpsRedirection();
-
+            //! Adiciona middleware de autencicação
             app.UseRouting();
+            //! Adiciona middleware de autenticaçao
+            app.UseAuthentication();
 
+            //!Adiciona middleware de autorização
             app.UseAuthorization();
 
+
+            //! Adiciona o middleware que executa o endpoint do request atual
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
