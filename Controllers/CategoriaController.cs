@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,11 +40,25 @@ namespace APICatalogo.Controllers
             return $"Autor: {autor} Conexao: {conexao}";
         }
         [HttpGet]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriasParameters)
         {
             try
             {
-                var categorias  = _uof.CategoriaRepository.GetCategoriaProdutos().ToList();
+                var categorias  = _uof.CategoriaRepository.GetCategorias(categoriasParameters);
+
+                var metadata = new
+                {
+                    categorias.TotalCount,
+                    categorias.PageSize,
+                    categorias.CurrentPage,
+                    categorias.TotalPages,
+                    categorias.HasNext,
+                    categorias.HasPrevious
+
+                };
+
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+                
                 var categoriasDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
                 return categoriasDTO;
             }
@@ -83,13 +98,6 @@ namespace APICatalogo.Controllers
             }
         }
 
-        [HttpGet("categoriaProduto")]
-        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasProduto()
-        {
-            var categorias = _uof.CategoriaRepository.GetCategoriaProdutos().ToList();
-            var categoriasDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
-            return categoriasDTO;
-        }
         [HttpPost]
         public ActionResult Post([FromBody] CategoriaDTO categoriaDTO)
         {
