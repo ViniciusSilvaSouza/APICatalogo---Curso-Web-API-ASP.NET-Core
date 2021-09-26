@@ -6,6 +6,7 @@ using APICatalogo.Logging;
 using APICatalogo.Repository;
 using APICatalogo.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -16,10 +17,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace APICatalogo
@@ -44,16 +47,33 @@ namespace APICatalogo
             services.AddSingleton(mapper);
             services.AddScoped<APILoggingFilter>();
 
-            //! Connection String da aplicação
+            // Connection String da aplicação
             string sqlConnection = Configuration.GetConnectionString("DefaultConnection");
 
-            // ! Adiciona DBContext da aplicação
+            //  Adiciona DBContext da aplicação
             services.AddDbContext<AppDbContext>(options =>
            options.UseMySql(sqlConnection, ServerVersion.AutoDetect(sqlConnection)));
 
 
             //! Serviço que adiciona Identity na aplicação
             services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+            /*! 
+             * JWT
+             * Adiciona o manipulador de autenticação e define o esquema de autenticação usado: Bearer
+             * valida o emissor, a audiencia e a chave usando a chave secreta, depois valida assinatura
+            */
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+            opt.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidAudience = Configuration["TokenConfiguration:Audience"],
+                ValidIssuer = Configuration["TokenConfiguration:Issuer"],
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+            });
 
             services.AddTransient<IMeuServico, MeuServico>();
 
@@ -79,7 +99,7 @@ namespace APICatalogo
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "APICatalogo v1"));
             }
-            
+
             loggerFactory.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration
             {
                 LogLevel = LogLevel.Information
@@ -87,16 +107,16 @@ namespace APICatalogo
             app.ConfigureExceptionHandler();
 
             app.UseHttpsRedirection();
-            //! Adiciona middleware de autencicação
+            // Adiciona middleware de autencicação
             app.UseRouting();
-            //! Adiciona middleware de autenticaçao
+            // Adiciona middleware de autenticaçao
             app.UseAuthentication();
 
             //!Adiciona middleware de autorização
             app.UseAuthorization();
 
 
-            //! Adiciona o middleware que executa o endpoint do request atual
+            // Adiciona o middleware que executa o endpoint do request atual
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
