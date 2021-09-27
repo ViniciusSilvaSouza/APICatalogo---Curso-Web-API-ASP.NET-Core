@@ -41,7 +41,7 @@ namespace APICatalogo
         {
 
             services.AddCors( opt =>  {
-                opt.AddPolicy("PermitirApiRequest", builder => builder.WithOrigins("").WithMethods("GET"));
+                opt.AddPolicy("PermitirApiRequest", builder => builder.WithOrigins("https://www.apirequest.io").WithMethods("GET"));
             }
             );
             //! Adiciona AutoMapper 
